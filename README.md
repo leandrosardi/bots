@@ -1,4 +1,4 @@
-# googling
+# google-search-api
 Web Service to Request Google Search and Get Results 
 
 ## 1. Installation
@@ -34,3 +34,8 @@ BlackStack::Google.set_proxies([
 ])
 ```
 
+## 5. Running as a MySaaS Extension
+
+```ruby
+BlackStack::Extensions.append :google_search_api
+```
