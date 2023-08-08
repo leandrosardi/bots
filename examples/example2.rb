@@ -30,8 +30,8 @@ not_found = 0 # number of domains not found
             domains.each { |domain|
                 # array of possible emails
                 emails = []
-                emails << "#{fname}@#{domain}"
-                emails << "#{lname}@#{domain}"
+                #emails << "#{fname}@#{domain}"
+                #emails << "#{lname}@#{domain}"
                 emails << "#{fname}#{lname}@#{domain}"
                 emails << "#{fname}.#{lname}@#{domain}"
                 emails << "#{fname}_#{lname}@#{domain}"
@@ -42,7 +42,7 @@ not_found = 0 # number of domains not found
                     search = "\"#{email}\""
                     results = bot.search(search)
                     # find results with the exact email in the description
-                    found << email if results.select { |result| result[:description].downcase.include?(email.downcase) }
+                    found << email if results.select { |result| result[:description].downcase =~ /\b#{email.downcase}\b/ }
                     # break 
                     break if found.size > 0
                 }
