@@ -1,42 +1,90 @@
-# google-search-api
+# bots
 
-Web Service to Request Google Search and Get Results 
+Service for scraping different sources of information.
 
-## 1. Installation
+Services supported as of today:
+
+- Google
+- Indeed
+
+## Installation
 
 ```bash
-gem install google-search-api
+gem install bots
 ```
 
-## 2. Getting Started
+## Google
 
 ```ruby
-BlackStack::Google.search('Leandro Sardi "@expandedventure.com"').each { |res|
-    puts res.title
-    puts res.url
-    puts res.abstract
-    puts
+require 'bots'
+
+@proxy = {
+    ip: '206.83.40.68',
+    port_from: 4000,
+    port_to: 4249,
+    user: '********',
+    password: '********',
 }
+
+l = BlackStack::LocalLogger.new('./google.log')
+
+puts "\n\nEXAMPLE 1".blue
+puts "Find top results for the keyword \"ConnectionSphere\".\n".yellow
+
+l.logs 'initialize GoogleBot... '
+bot = BlackStack::Bots::Google.new({proxy: @proxy})
+l.done
+
+l.logs 'searching... '
+results = bot.search('ConnectionSphere')
+l.logf "#{results.size.to_s.green} results found"
+
+results.each { |h|
+    l.logf "\n\n"
+    l.logf "TITLE:\t\t#{h[:title].green}"
+    l.logf "URL:\t\t#{h[:url].blue}"
+    l.logf "DESCRIPTION:\t#{h[:description].yellow}"
+}
+
+exit(0)
 ```
 
-## 3. Working with Proxies
+## Indeed
 
 ```ruby
-BlackStack::Google.set_proxies([
-    { :ip=>'x01.connectionsphere.com', :port=>4000, :user=>'ls', :password=>'ls4000' }
-])
-```
+require 'bots'
 
-## 4. Working with Very Larg Proxies
+l = BlackStack::LocalLogger.new('./indeed.log')
 
-```ruby
-BlackStack::Google.set_proxies([
-    { :ip=>'x01.connectionsphere.com', :port=>[4000..4999], :user=>'ls', :password=>'ls4000' }
-])
-```
+puts "\n\nEXAMPLE 1".blue
+puts "Find domain of a company using Google Search API.\nCount the number of 'not-found' and 'error' cases.\n".yellow
 
-## 5. Running as a MySaaS Extension
+l.logs 'initialize GoogleBot... '
+bot = BlackStack::Bots::Indeed.new(proxy: nil)
+l.done
 
-```ruby
-BlackStack::Extensions.append :google_search_api
+start = 0
+search = "https://www.indeed.com/jobs?q=full+time+%2485%2C000&l=Miami%2C+FL&sc=0bf%3Aexrec%28%29%2Ckf%3Ajt%28fulltime%29%3B&radius=100&vjk=469bf011e1ab581f"
+while start <= 640
+    l.logs "start=#{start}... "
+
+    url = "#{search}&start=#{start}"
+    ret = bot.results(url)
+
+    # save ret into a json file
+    File.open("./indeed1.start-#{start.to_s}.json", 'w') { |f| f.write(ret.to_json) }
+
+    # save into a CSV file
+    CSV.open("./indeed1.all.csv", 'a+b') { |csv|
+        csv << ['title', 'url', 'company', 'location', 'salary', 'posted', 'snippets']
+        ret.each { |h|
+            csv << [h[:title], h[:url], h[:company], h[:location], h[:salary], h[:posted], h[:snippets].join(' / ')]
+        }        
+    }
+
+    # increase start
+    start += 10
+
+    l.done
+end
 ```

@@ -1,20 +1,6 @@
-require 'mechanize'
-require 'simple_cloud_logging'
-require 'colorize'
-
 module BlackStack
     module Bots
-        class Google
-            attr_accessor :agent # mechanize agent
-            attr_accessor :ports # array of ports
-            attr_accessor :port_index # index of the port
-
-            def initialize
-                # array of numbers from 4000 to 4249
-                self.ports = (4000..4249).to_a
-                self.port_index = -1
-            end # initialize
-
+        class Google < BlackStack::Bots::MechanizeBot
             def search(query)
                 ret = []
                 # initialize mechanize agent
@@ -22,13 +8,12 @@ module BlackStack
                 # set a proxy with user and password
                 self.port_index += 1
                 self.port_index = 0 if self.port_index >= self.ports.length
-                self.agent.set_proxy('206.83.40.68', self.ports[self.port_index], 'siddique', 'jvg')
+                self.agent.set_proxy(self.ip, self.ports[self.port_index], self.user, self.password) if self.proxy?
                 # grab the page
                 page = agent.get('http://www.google.com/')
                 google_form = page.form('f')
                 google_form.q = query
                 page = agent.submit(google_form, google_form.buttons.first)
-
                 # iterate divs with class starting with 'g '
                 page.search('h3').each do |h3|
                     # get the class of the div
@@ -50,7 +35,7 @@ module BlackStack
                 ret
             end # search
         end # Google
-
+=begin
         class GoogleEnrichment < BlackStack::Bots::Google
 
             # get an array of domains that may be the domain of the company
@@ -89,7 +74,7 @@ module BlackStack
             end # find_email
 
         end # GoogleEnrichment
-
+=end
     end # Bots
 end # BlackStack
 

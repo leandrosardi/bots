@@ -1,20 +1,7 @@
-require 'selenium-webdriver'
-require 'simple_cloud_logging'
-require 'colorize'
-require 'csv'
-
+require_relative './base'
 module BlackStack
     module Bots
-        class Indeed
-            attr_accessor :agent # mechanize agent
-            attr_accessor :ports # array of ports
-            attr_accessor :port_index # index of the port
-
-            def initialize
-                # array of numbers from 4000 to 4249
-                self.ports = (4000..4249).to_a
-                self.port_index = -1
-            end # initialize
+        class Indeed < BlackStack::Bots::SeleniumBot
 
             def results(url, page=1)
                 ret = []
@@ -25,11 +12,9 @@ module BlackStack
                 driver.get url
                 # get the ul list with class .jobsearch-ResultsList
                 ul = driver.find_element(:class=>'jobsearch-ResultsList')
-                # iterate li elements
-puts
                 # scroll to the bottom
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-
+                # iterate li elements
                 i = 0
                 ul.find_elements('css', 'li').each { |li|
                     h = {}
@@ -39,8 +24,6 @@ puts
                         link = li.find_element('css', 'a.jcs-JobTitle')
                         h[:title] = link.text
                         h[:url] = link.attribute('href')
-
-puts "li.text: #{h[:title]}"
                     
                         o = li.find_elements('css','span.companyName').first
                         h[:company] = o ? o.text : ''
