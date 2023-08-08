@@ -1,5 +1,7 @@
 require_relative '../lib/googlebot'
-require_relative './sample.emails.rb' # array of sample list of leads with name and domain.
+
+require_relative './sample.emails.rb' # array of sample list of leads with an VERIFIED email provided by LeadHype - Hit rate is close 100% here!
+#require_relative './sample.leads.rb' # array of sample list of leads LeadHype with or without verified email
 
 l = BlackStack::LocalLogger.new('./example2.log')
 
