@@ -11,7 +11,7 @@ bot = BlackStack::Bots::Google.new({proxy: @proxy})
 l.done
 
 l.logs 'searching... '
-results = bot.search('Salon de Fiestas en Recoleta')
+results = bot.search('ConnectionSphere')
 l.logf "#{results.size.to_s.green} results found"
 
 results.each { |h|
