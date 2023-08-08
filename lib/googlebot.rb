@@ -62,6 +62,32 @@ module BlackStack
                 }        
             end # possible_domains_for_company
 
+            # find email from fname, lname and cname
+            def find_email(fname, lname, cname)
+                domains = self.possible_domains_for_company(cname)
+                if domains.size > 0
+                    domains.each { |domain|
+                        # array of possible emails
+                        emails = []
+                        #emails << "#{fname}@#{domain}"
+                        #emails << "#{lname}@#{domain}"
+                        emails << "#{fname}#{lname}@#{domain}"
+                        emails << "#{fname}.#{lname}@#{domain}"
+                        emails << "#{fname}_#{lname}@#{domain}"
+                        emails << "#{fname[0]}#{lname}@#{domain}"
+                        # iterate array of possible emails
+                        emails.each { |email|
+                            # search for that email
+                            search = "\"#{email}\""
+                            results = self.search(search)
+                            # find results with the exact email in the description
+                            return email if results.select { |result| result[:description].downcase =~ /\b#{email.downcase}\b/ }
+                        }
+                    }
+                end
+                return nil      
+            end # find_email
+
         end # GoogleEnrichment
 
     end # Bots

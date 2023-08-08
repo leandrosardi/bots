@@ -21,46 +21,18 @@ error = 0 # number of errors
 not_found = 0 # number of domains not found
 @leads.each { |h|
     i += 1
-    found = [] # emails found in google
     fname = h[:name].split(' ').first
     lname = h[:name].split(' ').last
     cname = h[:company]
     l.logs "#{i.to_s}. #{fname} #{lname} @ #{cname} (#{h[:email]})... "
     begin
-        domains = bot.possible_domains_for_company(cname)
-        if domains.size > 0
-            domains.each { |domain|
-                # array of possible emails
-                emails = []
-                #emails << "#{fname}@#{domain}"
-                #emails << "#{lname}@#{domain}"
-                emails << "#{fname}#{lname}@#{domain}"
-                emails << "#{fname}.#{lname}@#{domain}"
-                emails << "#{fname}_#{lname}@#{domain}"
-                emails << "#{fname[0]}#{lname}@#{domain}"
-                # iterate array of possible emails
-                emails.each { |email|
-                    # search for that email
-                    search = "\"#{email}\""
-                    results = bot.search(search)
-                    # find results with the exact email in the description
-                    found << email if results.select { |result| result[:description].downcase =~ /\b#{email.downcase}\b/ }
-                    # break 
-                    break if found.size > 0
-                }
-                # break 
-                break if found.size > 0
-            }
-            if found.size > 0
-                ok += 1
-                l.logf("FOUND".green + " (#{found.first})")
-            else
-                not_found += 1
-                l.logf("EMAIL NOT FOUND".yellow)
-            end
+        email = bot.find_email(fname, lname, cname)
+        if email
+            ok += 1
+            l.logf("FOUND".green + " (#{email})")
         else
             not_found += 1
-            l.logf("DOMAIN NOT FOUND".yellow)
+            l.logf("NOT FOUND".yellow)
         end
     # catch if the user pressed CTRL+C
     rescue Interrupt => e
