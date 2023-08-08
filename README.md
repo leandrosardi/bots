@@ -1,10 +1,11 @@
 # google-search-api
+
 Web Service to Request Google Search and Get Results 
 
 ## 1. Installation
 
 ```bash
-gem install googling
+gem install google-search-api
 ```
 
 ## 2. Getting Started
