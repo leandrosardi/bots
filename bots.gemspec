@@ -1,12 +1,13 @@
 Gem::Specification.new do |s|
   s.name        = 'bots'
-  s.version     = '1.0.1'
-  s.date        = '2023-08-08'
+  s.version     = '1.0.2'
+  s.date        = '2023-08-15'
   s.summary     = "Ruby gem for scraping information from the public web."
   s.description = "Ruby gem for scraping information from the public web."
   s.authors     = ["Leandro Daniel Sardi"]
   s.email       = 'leandro@connectionsphere.com'
   s.files       = [
+    'lib/scraper.rb',
     'lib/bots.rb',
     'lib/base.rb',
     'lib/google.rb',
@@ -19,4 +20,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'mechanize', '~> 2.8.5', '>= 2.8.5'
   s.add_runtime_dependency 'selenium-webdriver', '~> 4.10.0', '>= 4.10.0'
   s.add_runtime_dependency 'colorize', '~> 0.8.1', '>= 0.8.1'
+  s.add_runtime_dependency 'pry', '~> 0.14.2', '>= 0.14.2'
+  s.add_runtime_dependency 'open-uri', '~> 0.2.0', '>= 0.2.0'
+  s.add_runtime_dependency 'sitemap-parser', '~> 0.5.6', '>= 0.5.6'
+  s.add_runtime_dependency 'timeout', '~> 0.4.0', '>= 0.4.0'
 end

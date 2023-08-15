@@ -1,33 +1,44 @@
 module BlackStack
     module Bots
-        class Scraper
-            attr_accessor :domain, :agent, :links
+        class Scraper < BlackStack::Bots::MechanizeBot
+            attr_accessor :domain, :links
             # auxiliar array of links that I have extracted links from
             attr_accessor :links_processed
         
-            def initialize(init_domain)
+            def initialize(init_domain, h)
+                super(h)
                 self.domain = init_domain
-                self.agent = Mechanize.new
-                self.agent.open_timeout = 5
-                self.agent.read_timeout = 5
                 #self.agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
                 self.links = []
                 self.links_processed = []
             end # def initialize
-        
+
+            def get(url)
+                # initialize mechanize agent
+                self.agent = Mechanize.new
+                # set a proxy with user and password
+                self.port_index += 1
+                self.port_index = 0 if self.port_index >= self.ports.length
+                self.agent.set_proxy(self.ip, self.ports[self.port_index], self.user, self.password) if self.proxy?
+                self.agent.open_timeout = 5
+                self.agent.read_timeout = 5
+                # return
+                return Timeout::timeout(5) { self.agent.get(url) }
+            end
+
             def get_links_from_sitemap(l=nil)
                 i = 0
                 l.logs "Scrape sitemaps... "
                 begin
                     # download the robots.txt
-                    url = "https://#{domain}/robots.txt"
+                    url = "http://#{domain}/robots.txt"
                     # get the content of robots.txt from url
-                    s = URI.open(url).read
+                    s = Timeout::timeout(5) { URI.open(url).read }
                     # get the sitemap
                     sitemaps = s.split("\n").select { |line| line =~ /^sitemap:/i }.map { |a| a.downcase.split('sitemap:').last.strip }.uniq
                     sitemaps.each { |b|
-                        parser = sitemap = SitemapParser.new b
-                        self.links += parser.to_a
+                        parser = Timeout::timeout(5) { SitemapParser.new b }
+                        self.links += Timeout::timeout(5) { parser.to_a }
                         self.links.uniq!
                     }
                     l.logf sitemaps.size == 0 ? 'no sitemap found'.yellow : "#{sitemaps.size} sitemaps found".green # get_links
@@ -47,7 +58,7 @@ module BlackStack
                     # get domain of the url using open-uri
                     domain = URI.parse(url).host
                     # visit the main page of the website
-                    page = self.agent.get(url)
+                    page = self.get(url)
                     # get the self.links to the pages of the website
                     aux = page.links.map(&:href)
                     # remove # from the self.links
@@ -77,7 +88,7 @@ module BlackStack
             def get_links(stop_at=10, l=nil)
                 l = BlackStack::DummyLogger.new(nil) if l.nil?
                 # working with root url
-                url = "https://#{self.domain}/"
+                url = "http://#{self.domain}/"
                 self.links << url if self.links.select { |link| link == url }.empty?
                 # iterate until I have discovered all the links
                 while self.links.size != self.links_processed.size && stop_at >= self.links.size
@@ -98,20 +109,18 @@ module BlackStack
                 l = BlackStack::DummyLogger.new(nil) if l.nil?
                 # iterate the links
                 j = 0
-                self.links.each { |link|
+                self.links.reject { |link| link =~ /\.pdf$/i || link =~ /\.jpg$/i || link =~ /\.jpeg$/i || link =~ /\.gif$/i }.each { |link|
                     j += 1
                     break if j > stop_at
                     l.logs "#{j.to_s}. find_keywords (#{link})... "
                     begin
                         # get the page
-                        page = self.agent.get(link)
+                        page = self.get(link)
                         # get page body content in plain text
-                        s = Nokogiri::HTML(page.body).text
+                        s = Timeout::timeout(5) { Nokogiri::HTML(page.body).text }
                         # iterate the keywords
                         i = 0
                         a.each { |k|
-                            # skip PDFs and JPGs
-                            next if link =~ /\.pdf$/i || link =~ /\.jpg$/i || link =~ /\.jpeg$/i || link =~ /\.gif$/i
                             # find the keyword
                             if s =~ /#{Regexp.escape(k)}/i
                                 i += 1
@@ -119,9 +128,10 @@ module BlackStack
                                 break
                             end # if
                         } # each
+                        break if ret.size > 0
                         l.logf i == 0 ? 'no keywords found'.yellow : "#{i} keywords found".green # find_keywords
                     rescue => e
-                        l.logf "Error: #{e.message.split("\n").first[0..100]})".red # get_links
+                        l.logf "Error: #{e.message.split("\n").first[0..100]}".red # get_links
                     end # begin
                 } # each
                 # return

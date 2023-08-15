@@ -9,11 +9,13 @@ module BlackStack
 
             def initialize(h)
                 # array of numbers from 4000 to 4249
-                unless h[:proxy].nil?
-                    self.ip = h[:proxy][:ip]
-                    self.user = h[:proxy][:user]
-                    self.password = h[:proxy][:password]
-                    self.ports = (h[:proxy][:port_from]..h[:proxy][:port_to]).to_a
+                if h
+                    self.ip = h[:ip]
+                    self.user = h[:user]
+                    self.password = h[:password]
+                    self.ports = (h[:port_from]..h[:port_to]).to_a
+                else
+                    self.ports = []
                 end
                 self.port_index = -1
             end # initialize
@@ -26,10 +28,16 @@ module BlackStack
 
         class MechanizeBot < BlackStack::Bots::Bot
             attr_accessor :agent # mechanize agent
+            def initialize(h)
+                super(h)
+            end
         end # MechanizeBot
 
         class SeleniumBot < BlackStack::Bots::Bot
             attr_accessor :driver # selenium driver
+            def initialize(h)
+                super(h)
+            end
         end # MechanizeBot
 
     end # Bots
