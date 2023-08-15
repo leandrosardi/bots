@@ -1,9 +1,13 @@
+    require 'open-uri'
 require 'mechanize'
 require 'selenium-webdriver'
 require 'simple_cloud_logging'
 require 'colorize'
 require 'csv'
+    require 'pry'
+    require 'sitemap-parser'
 
+require_relative './scraper'
 require_relative './base'
 require_relative './google'
 require_relative './indeed'
