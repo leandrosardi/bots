@@ -236,18 +236,19 @@ i = 0
 #domains.select { |s| s=='avisbudgetgroup.com' }.each { |domain|
 domains.each { |domain|
     i += 1
+    l.logs "#{i}. #{domain}... "
 
-    o = BlackStack::Bots::Scraper.new(domain)
-    #l.logs "get_links... "
-    o.get_links(10) #, l)
-    #o.links = []
-    #o.links << 'https://oiatlanta.com/products/grand-rapids-chair/'
-    #o.links << 'https://oiatlanta.com/give-an-experience-this-year/'
-    #l.logf "done".green + " (#{o.links.size} links found)" # get_links
+        o = BlackStack::Bots::Scraper.new(domain)
+        l.logs "get_links... "
+        o.get_links(10) #, l)
+        #o.links = []
+        #o.links << 'https://oiatlanta.com/products/grand-rapids-chair/'
+        #o.links << 'https://oiatlanta.com/give-an-experience-this-year/'
+        l.logf "done".green + " (#{o.links.size} links found)" # get_links
 
-    #l.logs "find_keywords... "
-    a = o.find_keywords(keywords) #, l)
-    #l.logf "done".green + " (#{a.size} links found)" # find_keywords
+        l.logs "find_keywords... "
+        a = o.find_keywords(keywords) #, l)
+        l.logf "done".green + " (#{a.size} links found)" # find_keywords
 
     l.logf a.size == 0 ? 'keywords not found'.red : "#{a.size} links found".green # find_keywords
 }
