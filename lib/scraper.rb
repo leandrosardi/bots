@@ -61,6 +61,8 @@ module BlackStack
                     page = self.get(url)
                     # get the self.links to the pages of the website
                     aux = page.links.map(&:href)
+                    # remove non-string elements
+                    aux = aux.select { |link| link.is_a?(String) }
                     # remove # from the self.links
                     aux = aux.map { |link| !link.nil? && link.split('#').first }
                     # remove querystring from the self.links
