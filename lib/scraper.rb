@@ -106,7 +106,7 @@ module BlackStack
                 self.get_links_from_sitemap(l)
             end # def get_links
         
-            def find_keywords(a, stop_at=50, l=nil)
+            def find_keywords(a, stop_at=50, stop_on_first_link_found=false, l=nil)
                 ret = []
                 l = BlackStack::DummyLogger.new(nil) if l.nil?
                 # iterate the links
@@ -119,15 +119,27 @@ module BlackStack
                         # get the page
                         page = self.get(link)
                         # get page body content in plain text
+                        title = page.title
                         s = Timeout::timeout(5) { Nokogiri::HTML(page.body).text }
+                        # add the link to the results of no-keyword
+                        ret << { :url => link, :title => title, :match => false, :keyword => nil }
                         # iterate the keywords
                         i = 0
                         a.each { |k|
                             # find the keyword
-                            if s =~ /#{Regexp.escape(k)}/i
+                            match = ( s =~ /#{Regexp.escape(k)}/i )
+                            if ret.select { |h| h[:url] == link && h[:keyword] == k }.empty?
+                                ret << { :url => link, :title => title, :match => match, :keyword => k }
+                            else
+                                h = ret.select { |h| h[:url] == link && h[:keyword] == k }.first
+                                h[:title] = title if h[:title].nil?
+                                h[:match] ||= match
+                            end
+                            # count the number of links with match
+                            # break if only 1 link is needed
+                            if match 
                                 i += 1
-                                ret << link if ret.select { |link| link == link }.empty?
-                                break
+                                break if stop_on_first_link_found
                             end # if
                         } # each
                         break if ret.size > 0
