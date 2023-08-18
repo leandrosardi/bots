@@ -122,7 +122,7 @@ module BlackStack
                         title = page.title
                         s = Timeout::timeout(5) { page.search('body').text }
                         # add the link to the results of no-keyword
-                        hpage = { :url => link, :title => title, :html => page.body, :keywords => [] }
+                        hpage = { 'page_url' => link.downcase, 'page_title' => title, 'page_html' => page.body, 'keywords' => [] }
                         pages << hpage
                         # iterate the keywords
                         i = 0
@@ -130,7 +130,7 @@ module BlackStack
                         a.each { |k|
                             # find the keyword
                             match = ( s =~ /#{Regexp.escape(k)}/i )
-                            hpage[:keywords] << k if match
+                            hpage['keywords'] << k if match
                             # count the number of links with match
                             # break if only 1 link is needed
                             if match 
