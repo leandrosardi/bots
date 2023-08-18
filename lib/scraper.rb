@@ -107,7 +107,7 @@ module BlackStack
             end # def get_links
         
             def find_keywords(a, stop_at=50, stop_on_first_link_found=false, l=nil)
-                ret = []
+                pages = []
                 l = BlackStack::DummyLogger.new(nil) if l.nil?
                 # iterate the links
                 j = 0
@@ -120,21 +120,17 @@ module BlackStack
                         page = self.get(link)
                         # get page body content in plain text
                         title = page.title
-                        s = Timeout::timeout(5) { Nokogiri::HTML(page.body).text }
+                        s = Timeout::timeout(5) { page.search('body').text }
                         # add the link to the results of no-keyword
-                        ret << { :url => link, :title => title, :match => false, :keyword => nil }
+                        hpage = { :url => link, :title => title, :html => page.body, :keywords => [] }
+                        pages << hpage
                         # iterate the keywords
                         i = 0
+                        match = false
                         a.each { |k|
                             # find the keyword
                             match = ( s =~ /#{Regexp.escape(k)}/i )
-                            if ret.select { |h| h[:url] == link && h[:keyword] == k }.empty?
-                                ret << { :url => link, :title => title, :match => match, :keyword => k }
-                            else
-                                h = ret.select { |h| h[:url] == link && h[:keyword] == k }.first
-                                h[:title] = title if h[:title].nil?
-                                h[:match] ||= match
-                            end
+                            hpage[:keywords] << k if match
                             # count the number of links with match
                             # break if only 1 link is needed
                             if match 
@@ -142,14 +138,14 @@ module BlackStack
                                 break if stop_on_first_link_found
                             end # if
                         } # each
-                        break if ret.size > 0
+                        break if match && stop_on_first_link_found
                         l.logf i == 0 ? 'no keywords found'.yellow : "#{i} keywords found".green # find_keywords
                     rescue => e
                         l.logf "Error: #{e.message.split("\n").first[0..100]}".red # get_links
                     end # begin
                 } # each
                 # return
-                ret
+                pages
             end
         
         end # class Scraper

@@ -59,7 +59,7 @@ domains.select { |s| s=='columbiaconventioncenter.com' }.each { |domain|
         l.logf "done".green + " (#{o.links.size} links found)" # get_links
 
         l.logs "find_keywords... "
-        a = o.find_keywords(keywords, 50, l)
+        a = o.find_keywords(keywords, 50, false, l)
         l.logf "done".green + " (#{a.size} links found)" # find_keywords
 
     l.logf a.size == 0 ? 'keywords not found'.red : "#{a.size} links found".green # find_keywords

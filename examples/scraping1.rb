@@ -45,23 +45,20 @@ domains = [
 l = BlackStack::LocalLogger.new('scraping1.log')
 
 i = 0
-#domains.select { |s| s=='bigtcoastalprovisions.com' }.each { |domain|
-#domains.select { |s| s=='merchneygreenhouses.com' }.each { |domain|
 domains.reverse.each { |domain|
     i += 1
     l.logs "#{i}. #{domain}... "
 
+        l2 = nil # l
+
         o = BlackStack::Bots::Scraper.new(domain, nil)
         #l.logs "get_links... "
-        o.get_links(10) #, l)
-        #o.links = []
-        #o.links << 'https://oiatlanta.com/products/grand-rapids-chair/'
-        #o.links << 'https://oiatlanta.com/give-an-experience-this-year/'
+        o.get_links(10, l2)
         #l.logf "done".green + " (#{o.links.size} links found)" # get_links
 
         #l.logs "find_keywords... "
-        a = o.find_keywords(keywords) #, 50, l)
+        pages = o.find_keywords(keywords, 50, false, l2)
+        a = pages.select { |h| h[:keywords].size > 0 } # pages with matched keyword
         #l.logf "done".green + " (#{a.size} links found)" # find_keywords
-
     l.logf a.size == 0 ? 'keywords not found'.red : "#{a.size} links found".green # find_keywords
 }
