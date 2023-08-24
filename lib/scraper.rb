@@ -1,13 +1,14 @@
 module BlackStack
     module Bots
         class Scraper < BlackStack::Bots::MechanizeBot
-            attr_accessor :domain, :links
+            attr_accessor :domain, :links, :timeout
             # auxiliar array of links that I have extracted links from
             attr_accessor :links_processed
         
-            def initialize(init_domain, h)
+            def initialize(init_domain, timeout, h)
                 super(h)
                 self.domain = init_domain
+                self.timeout = timeout || 10
                 #self.agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
                 self.links = []
                 self.links_processed = []
@@ -20,10 +21,10 @@ module BlackStack
                 self.port_index += 1
                 self.port_index = 0 if self.port_index >= self.ports.length
                 self.agent.set_proxy(self.ip, self.ports[self.port_index], self.user, self.password) if self.proxy?
-                self.agent.open_timeout = 5
-                self.agent.read_timeout = 5
+                self.agent.open_timeout = self.timeout
+                self.agent.read_timeout = self.timeout
                 # return
-                return Timeout::timeout(5) { self.agent.get(url) }
+                return Timeout::timeout(self.timeout) { self.agent.get(url) }
             end
 
             def get_links_from_sitemap(l=nil)
@@ -33,12 +34,12 @@ module BlackStack
                     # download the robots.txt
                     url = "http://#{domain}/robots.txt"
                     # get the content of robots.txt from url
-                    s = Timeout::timeout(5) { URI.open(url).read }
+                    s = Timeout::timeout(self.timeout) { URI.open(url).read }
                     # get the sitemap
                     sitemaps = s.split("\n").select { |line| line =~ /^sitemap:/i }.map { |a| a.downcase.split('sitemap:').last.strip }.uniq
                     sitemaps.each { |b|
-                        parser = Timeout::timeout(5) { SitemapParser.new b }
-                        self.links += Timeout::timeout(5) { parser.to_a }
+                        parser = Timeout::timeout(self.timeout) { SitemapParser.new b }
+                        self.links += Timeout::timeout(self.timeout) { parser.to_a }
                         self.links.uniq!
                     }
                     l.logf sitemaps.size == 0 ? 'no sitemap found'.yellow : "#{sitemaps.size} sitemaps found".green # get_links
@@ -83,7 +84,7 @@ module BlackStack
                     self.links += aux
                     l.logf "done".green + " (#{a} links found, #{b} new, #{self.links.size} total)" # get_links
                 rescue => e
-                    l.logf "Error: #{e.message.split("\n").first[0..100]})".red # get_links
+                    l.logf "Error: #{e.message.split("\n").first[0..100]}".red # get_links
                 end
             end # def get_links_from_url
         
@@ -120,7 +121,7 @@ module BlackStack
                         page = self.get(link)
                         # get page body content in plain text
                         title = page.title
-                        s = Timeout::timeout(5) { page.search('body').text }
+                        s = Timeout::timeout(self.timeout) { page.search('body').text }
                         # add the link to the results of no-keyword
                         hpage = { 'page_url' => link.downcase, 'page_title' => title, 'page_html' => page.body, 'keywords' => [] }
                         pages << hpage
