@@ -1,6 +1,5 @@
 require_relative '../lib/bots'
 
-keywords = ['family owned', 'family-owned']
 domains = [
     'companytwofire.com',
     'carolinarecyclingcompany.com',
@@ -42,22 +41,14 @@ domains = [
     'thecharlestonmattress.com',
 ].uniq
 
-l = BlackStack::LocalLogger.new('scraping1.log')
+l = BlackStack::LocalLogger.new('scraping0.log')
 
 timeout = 30 # seconds
 i = 0
 domains.reverse.each { |domain|
     i += 1
     l.logs "#{i}. #{domain}... "
-        o = BlackStack::Bots::Scraper.new(domain, timeout, nil)
-        l.logs "get_links... "
-        o.get_links(10, nil)
-        l.logf "done".green + " (#{o.links.size} links found)" # get_links
-
-        #l.logs "find_keywords... "
-        pages = o.find_keywords(keywords, 50, false, l)
-binding.pry
-        a = pages.select { |h| h['keywords'].size > 0 } # pages with matched keyword
-        #l.logf "done".green + " (#{a.size} links found)" # find_keywords
-    l.logf a.size == 0 ? 'keywords not found'.red : "#{a.size} links found".green # find_keywords
+    o = BlackStack::Bots::Scraper.new(domain, timeout, nil)
+    o.get_links(10, nil)
+    l.logf o.links.size == 0 ? 'no links'.yellow : "links: #{o.links.size.to_s.green}"
 }

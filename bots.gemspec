@@ -24,4 +24,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'open-uri', '~> 0.2.0', '>= 0.2.0'
   s.add_runtime_dependency 'sitemap-parser', '~> 0.5.6', '>= 0.5.6'
   s.add_runtime_dependency 'timeout', '~> 0.4.0', '>= 0.4.0'
+  s.add_runtime_dependency 'watir', '~> 7.3.0', '>= 7.3.0'
 end

@@ -1,31 +1,18 @@
 module BlackStack
     module Bots
-        class Scraper < BlackStack::Bots::MechanizeBot
-            attr_accessor :domain, :links, :timeout
+        class Scraper
+            attr_accessor :domain, :links, :timeout, :load_wait_time
             # auxiliar array of links that I have extracted links from
             attr_accessor :links_processed
         
             def initialize(init_domain, timeout, h)
-                super(h)
                 self.domain = init_domain
                 self.timeout = timeout || 10
+                self.load_wait_time = 10
                 #self.agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
                 self.links = []
                 self.links_processed = []
             end # def initialize
-
-            def get(url)
-                # initialize mechanize agent
-                self.agent = Mechanize.new
-                # set a proxy with user and password
-                self.port_index += 1
-                self.port_index = 0 if self.port_index >= self.ports.length
-                self.agent.set_proxy(self.ip, self.ports[self.port_index], self.user, self.password) if self.proxy?
-                self.agent.open_timeout = self.timeout
-                self.agent.read_timeout = self.timeout
-                # return
-                return Timeout::timeout(self.timeout) { self.agent.get(url) }
-            end
 
             def get_links_from_sitemap(l=nil)
                 i = 0
@@ -52,16 +39,19 @@ module BlackStack
             def get_links_from_url(url, l=nil)
                 l = BlackStack::DummyLogger.new(nil) if l.nil?
                 l.logs "get_links (#{url})... "
+                aux = []
+                browser = nil
                 begin       
-                    aux = []
                     # trim url
                     url = url.strip
                     # get domain of the url using open-uri
                     domain = URI.parse(url).host
                     # visit the main page of the website
-                    page = self.get(url)
+                    browser = BlackStack::Bots::Browser.new()
+                    browser.goto url
+                    sleep(self.load_wait_time) # wait 10 seconds for javascript content to load
                     # get the self.links to the pages of the website
-                    aux = page.links.map(&:href)
+                    aux = browser.links.map(&:href)
                     # remove non-string elements
                     aux = aux.select { |link| link.is_a?(String) }
                     # remove # from the self.links
@@ -81,11 +71,15 @@ module BlackStack
                     aux = aux.select { |link| !self.links.include?(link) }
                     b = aux.size
                     # add new links to self.links
-                    self.links += aux
                     l.logf "done".green + " (#{a} links found, #{b} new, #{self.links.size} total)" # get_links
+                rescue Net::ReadTimeout => e
+                    l.logf "Timeout Error: #{e.message}".red            
                 rescue => e
                     l.logf "Error: #{e.message.split("\n").first[0..100]}".red # get_links
+                ensure
+                    browser.close if browser        
                 end
+                self.links += aux
             end # def get_links_from_url
         
             def get_links(stop_at=10, l=nil)
@@ -109,6 +103,7 @@ module BlackStack
         
             def find_keywords(a, stop_at=50, stop_on_first_link_found=false, l=nil)
                 pages = []
+                browser = nil
                 l = BlackStack::DummyLogger.new(nil) if l.nil?
                 # iterate the links
                 j = 0
@@ -118,12 +113,14 @@ module BlackStack
                     l.logs "#{j.to_s}. find_keywords (#{link})... "
                     begin
                         # get the page
-                        page = self.get(link)
+                        browser = BlackStack::Bots::Browser.new()
+                        browser.goto link
+                        sleep(self.load_wait_time) # wait 10 seconds for javascript content to load
                         # get page body content in plain text
-                        title = page.title
-                        s = Timeout::timeout(self.timeout) { page.search('body').text }
+                        title = browser.title
+                        s = browser.body.text
                         # add the link to the results of no-keyword
-                        hpage = { 'page_url' => link.downcase, 'page_title' => title, 'page_html' => page.body, 'keywords' => [] }
+                        hpage = { 'page_url' => link.downcase, 'page_title' => title, 'page_html' => browser.body.html, 'keywords' => [] }
                         pages << hpage
                         # iterate the keywords
                         i = 0
@@ -141,9 +138,14 @@ module BlackStack
                         } # each
                         break if match && stop_on_first_link_found
                         l.logf i == 0 ? 'no keywords found'.yellow : "#{i} keywords found".green # find_keywords
+
+                    rescue Net::ReadTimeout => e
+                        l.logf "Timeout Error: #{e.message}".red            
                     rescue => e
                         l.logf "Error: #{e.message.split("\n").first[0..100]}".red # get_links
-                    end # begin
+                    ensure
+                        browser.close if browser
+                    end
                 } # each
                 # return
                 pages
