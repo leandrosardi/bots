@@ -1,14 +1,16 @@
 module BlackStack
     module Bots
         class Scraper
-            attr_accessor :domain, :links, :timeout, :load_wait_time
+            attr_accessor :domain, :links, :timeout, :load_wait_time, :stop_scraping_at_page_number, :stop_scraping_at_match_number
             # auxiliar array of links that I have extracted links from
             attr_accessor :links_processed
         
             def initialize(init_domain, timeout, h)
                 self.domain = init_domain
                 self.timeout = timeout || 10
-                self.load_wait_time = 10
+                self.load_wait_time = 3
+                self.stop_scraping_at_page_number = 25
+                self.stop_scraping_at_match_number = 1
                 #self.agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
                 self.links = []
                 self.links_processed = []
@@ -31,7 +33,7 @@ module BlackStack
                     }
                     l.logf sitemaps.size == 0 ? 'no sitemap found'.yellow : "#{sitemaps.size} sitemaps found".green # get_links
                 rescue => e
-                    l.logf "Error: #{e.message.split("\n").first[0..100]})".red # get_links
+                    l.logf "Error: #{e.message.split("\n").first[0..100]}".red # get_links
                 end
             end
         
@@ -101,7 +103,7 @@ module BlackStack
                 self.get_links_from_sitemap(l)
             end # def get_links
         
-            def find_keywords(a, stop_at=50, stop_on_first_link_found=false, l=nil)
+            def find_keywords(a, stop_at=25, stop_on_first_link_found=false, l=nil)
                 pages = []
                 browser = nil
                 l = BlackStack::DummyLogger.new(nil) if l.nil?
