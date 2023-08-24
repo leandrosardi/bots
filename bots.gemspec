@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'bots'
-  s.version     = '1.0.6'
+  s.version     = '1.0.8'
   s.date        = '2023-08-24'
   s.summary     = "Ruby gem for scraping information from the public web."
   s.description = "Ruby gem for scraping information from the public web."
@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
     'lib/base.rb',
     'lib/google.rb',
     'lib/indeed.rb',
+    'lib/browser.rb',
   ]
   s.homepage    = 'https://rubygems.org/gems/bots'
   s.license     = 'MIT'

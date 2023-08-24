@@ -25,6 +25,11 @@ module BlackStack
                     end                    
                     options = Selenium::WebDriver::Chrome::Options.new
                     options.add_argument('--headless')
+
+                    # Add this parameter to run Chrome from a root user.
+                    # https://stackoverflow.com/questions/50642308/webdriverexception-unknown-error-devtoolsactiveport-file-doesnt-exist-while-t
+                    options.add_argument('--no-sandbox') 
+
                     driver = Selenium::WebDriver.for :chrome, :options => options, http_client: client
                     # create the browser
                     super(driver)
