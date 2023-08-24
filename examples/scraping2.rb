@@ -1,5 +1,4 @@
 require_relative '../lib/bots'
-require_relative './config' # write the @proxy hash description in this file
 
 keywords = ['family owned', 'family-owned']
 domains = [
@@ -46,7 +45,7 @@ domains = [
 l = BlackStack::LocalLogger.new('scraping2.log')
 
 i = 0
-domains.select { |s| s=='columbiaconventioncenter.com' }.each { |domain|
+domains.each { |domain|
     i += 1
     l.logs "#{i}. #{domain}... "
 
