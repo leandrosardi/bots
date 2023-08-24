@@ -50,7 +50,7 @@ domains.select { |s| s=='columbiaconventioncenter.com' }.each { |domain|
     i += 1
     l.logs "#{i}. #{domain}... "
 
-        o = BlackStack::Bots::Scraper.new(domain, nil)
+        o = BlackStack::Bots::Scraper.new(domain, 30, nil)
         l.logs "get_links... "
         o.get_links(10, l)
         #o.links = []
