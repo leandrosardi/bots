@@ -7,7 +7,7 @@ module BlackStack
             def initialize()
                 self.lockfile = File.open(LOCKFILENAME, 'w+')
 
-                n = 30 # timeout in seconds
+                n = 10 # timeout in seconds
 
                 # wait the lock file /tmp/blackstack.bots.browser.lock
                 self.lockfile.flock(File::LOCK_EX)
