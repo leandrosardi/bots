@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'bots'
-  s.version     = '1.0.8'
-  s.date        = '2023-08-24'
+  s.version     = '1.0.9'
+  s.date        = '2023-08-25'
   s.summary     = "Ruby gem for scraping information from the public web."
   s.description = "Ruby gem for scraping information from the public web."
   s.authors     = ["Leandro Daniel Sardi"]
