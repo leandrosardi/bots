@@ -7,15 +7,13 @@ module BlackStack
             def initialize()
                 self.lockfile = File.open(LOCKFILENAME, 'w+')
 
-                n = 10 # timeout in seconds
+                n = 20 # timeout in seconds
 
                 # wait the lock file /tmp/blackstack.bots.browser.lock
                 self.lockfile.flock(File::LOCK_EX)
                 begin
                     # get list of PID of all opened chrome browsers, before launching this one 
                     pids_before = `pgrep -f chrome`.split("\n")
-# track # of chrome processes
-#print "(#{pids_before.size})"
                     # setup driver
                     client = Selenium::WebDriver::Remote::Http::Default.new
                     begin
@@ -25,6 +23,11 @@ module BlackStack
                     end                    
                     options = Selenium::WebDriver::Chrome::Options.new
                     options.add_argument('--headless')
+                    # setup user agent with-out the keyword "headless"
+                    # otherwise, our scraper may be detected as a bot and blocked
+                    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                    #+"AppleWebKit/537.36 (KHTML, like Gecko)"
+                    #+"Chrome/87.0.4280.141 Safari/537.36")
 
                     # Add this parameter to run Chrome from a root user.
                     # https://stackoverflow.com/questions/50642308/webdriverexception-unknown-error-devtoolsactiveport-file-doesnt-exist-while-t
