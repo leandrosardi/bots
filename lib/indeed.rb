@@ -9,6 +9,7 @@ module BlackStack
                 # refernece: https://www.browserstack.com/guide/set-proxy-in-selenium
                 opts = Selenium::WebDriver::Chrome::Options.new
                 opts.add_argument('--proxy-server=173.208.150.242:15001')
+                opts.add_argument('--headless')
                 # start a chrome browser using the proxy configured above
                 driver = Selenium::WebDriver.for(:chrome, :options=>opts)
                 begin
