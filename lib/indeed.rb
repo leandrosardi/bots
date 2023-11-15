@@ -8,8 +8,11 @@ module BlackStack
                 # launch a chrome browser with selenium, with proxy
                 # refernece: https://www.browserstack.com/guide/set-proxy-in-selenium
                 opts = Selenium::WebDriver::Chrome::Options.new
-                opts.add_argument('--proxy-server=173.208.150.242:15001')
-                opts.add_argument('--headless')
+                if self.ip
+                    port = self.ports.sample
+                    opts.add_argument("--proxy-server=#{self.ip}:#{port}")
+                    #opts.add_argument("--headless')
+                end
                 # start a chrome browser using the proxy configured above
                 driver = Selenium::WebDriver.for(:chrome, :options=>opts)
                 begin
@@ -31,11 +34,13 @@ module BlackStack
                             link = li.find_element('css', 'a.jcs-JobTitle')
                             h[:title] = link.text
                             h[:url] = link.attribute('href')
-                        
+                            
                             o = li.find_elements('css','span.companyName').first
+                            o = li.find_elements('css', '[data-testid="company-name"]').first unless o
                             h[:company] = o ? o.text : ''
 
                             o = li.find_elements('css','div.companyLocation').first
+                            o = li.find_elements('css', '[data-testid="text-location"]').first unless o
                             h[:location] = o ? o.text : ''
                             
                             o = li.find_elements('css','div.salary-snippet-container').first
