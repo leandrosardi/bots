@@ -20,6 +20,10 @@ module BlackStack
 
                     # TODO: set a proxy with user and password
                     driver.get url
+                    # validate the search has no results
+                    # example: https://www.indeed.com/q-$40,000-l-The-Acreage,-FL-jobs.html
+                    body = driver.find_element(:tag_name => 'body')
+                    return [] if body.text.include?('did not match any jobs')
                     # get the ul list with class .jobsearch-ResultsList
                     ul = driver.find_element(:id=>'mosaic-provider-jobcards').find_element(:css=>'ul')
                     # scroll to the bottom
