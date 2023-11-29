@@ -32,7 +32,11 @@ a.each { |h|
     while start <= 640
         l.logs "start=#{start}... "
         begin
-            url = "#{search}&start=#{start}"
+            # build url
+            uri = URI.parse(search)
+            uri.query = [uri.query, "start=#{start}"].compact.join('&')
+            url = uri.to_s
+            # scrape results
             ret = bot.results(url)
             # save ret into a json file
             #File.open("./#{output_filename}.start-#{start.to_s}.json", 'w') { |f| f.write(ret.to_json) }
