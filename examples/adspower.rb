@@ -2,6 +2,7 @@ require 'uri'
 require 'net/http'
 require 'json'
 require 'pry'
+require 'blackstack-core'
 
 # reference: https://localapi-doc-en.adspower.com/
 # reference: https://localapi-doc-en.adspower.com/docs/Rdw7Iu
@@ -43,17 +44,18 @@ def create
     ret['data']['id']
 end
 
-def delete_many(ids)
-    uri = URI.parse("#{@url}/api/v1/user/delete")
-    res = Net::HTTP.post_form(uri, {
+def delete(id)
+    url = "#{@url}/api/v1/user/delete"
+    body = {
         'api_key' => @key,
-        'user_ids' => ["jc5fiad"],
-    })
+        'user_ids' => [id],
+    }
+    # api call
+    res = BlackStack::Netting.call_post(url, body)
     # show respose body
     ret = JSON.parse(res.body)
+    # validation
     raise "Error: #{ret.to_s}" if ret['msg'] != 'Success'
-    # return id of the created user
-    ret['data']['id']
 end
 
 # open the browser
@@ -71,5 +73,5 @@ def open(id)
     ret['data']['ws']['selenium']
 end
 
-#id = create
-open('jc5fiad')
+id = create
+#delete('jc5fiad')
